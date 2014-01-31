@@ -1,5 +1,6 @@
 package com.optit.sink;
 
+import oracle.kv.FaultException;
 import oracle.kv.KVStore;
 import oracle.kv.KVStoreConfig;
 import oracle.kv.KVStoreFactory;
@@ -13,6 +14,8 @@ import org.apache.flume.EventDeliveryException;
 import org.apache.flume.Transaction;
 import org.apache.flume.conf.Configurable;
 import org.apache.flume.sink.AbstractSink;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Apache Flume sink for Oracle NoSQL DB
@@ -22,9 +25,8 @@ import org.apache.flume.sink.AbstractSink;
 
 public class NoSQLDBSink extends AbstractSink implements Configurable
 {
-	//TODO: Integrate with Flume logging
-	//TODO: Exception handling
-	
+	private static final Logger LOG = LoggerFactory.getLogger(NoSQLDBSink.class);
+
 	String kvHost;
 	String kvStoreName;
 	String kvPort;
@@ -39,61 +41,75 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 		kvStoreName = context.getString("kvStoreName", "kvstore");
 		kvPort = context.getString("kvPort", "5000");
 		
-		System.out.println("Configuration settings:");
-		System.out.println("kvHost: " + kvHost);
-		System.out.println("kvStoreName: " + kvStoreName);
-		System.out.println("kvPort: " + kvPort);
+		LOG.info("Configuration settings:");
+		LOG.info("kvHost: " + kvHost);
+		LOG.info("kvStoreName: " + kvStoreName);
+		LOG.info("kvPort: " + kvPort);
 	}
 	
 	@Override
 	public void start()
 	{
-		System.out.println("Establishing connection to KV store");
-		// Open connection to KV Store
-		kvStore = KVStoreFactory.getStore(new KVStoreConfig(kvStoreName, kvHost + ":" + kvPort));
-		System.out.println("Connection established.");
+		try {
+			kvStore = KVStoreFactory.getStore(new KVStoreConfig(kvStoreName, kvHost + ":" + kvPort));
+		}
+		catch (FaultException e) {
+			LOG.error("Could not establish connection to KV store!");
+			LOG.error(e.getMessage());
+		}
+		
+		System.out.println("Connection to KV store established");
 	}
 	
 	@Override
 	public void stop()
 	{
-		// Close KV store connection
 		kvStore.close();
+		LOG.trace("Connection to KV store closed");
 	}
 	
 	@Override
 	public Status process() throws EventDeliveryException
 	{
-		System.out.println("New event coming in...");
+		LOG.info("New event coming in, begin processing...");
 		Status status = null;
 		
-		// Start transaction
+		LOG.trace("Get Flume channel");
 		Channel ch = getChannel();
+		LOG.trace("Start transaction");
 		Transaction txn = ch.getTransaction();
 		txn.begin();
-		System.out.println("Transaction context established");
+		LOG.trace("Transaction context established");
 		
+		// This try clause includes whatever Channel operations you want to do
 		try
 		{
-			// This try clause includes whatever Channel operations you want to do
+			Key key = null;
 			Event event = ch.take();
+			if (null != event.getHeaders().get("Key")) {
+				key = Key.fromString(event.getHeaders().get("Key"));
+			} else {
+				key = Key.createKey("myKey");
+			}
+			
+			LOG.trace("Event received: " + event.toString());
 			
 			//TODO: Think about how to derive key from message
-			// Send the Event to the external repository.
-			kvStore.put(Key.createKey("myKey"), Value.createValue(event.getBody()));
+			kvStore.put(key, Value.createValue(event.getBody()));
 			
 			txn.commit();
 			status = Status.READY;
 			
-			System.out.println("Event successfully stored in KV store");
+			LOG.info("Event successfully stored in KV store");
 		}
 		catch (Throwable t)
 		{
 			// Rollback transaction
 			txn.rollback();
-			
-			// Log exception, handle individual exceptions as needed
 			status = Status.BACKOFF;
+			
+			LOG.error("Error processing event!");
+			LOG.error(t.getMessage());
 			
 			// re-throw all Errors
 			if (t instanceof Error)
@@ -102,10 +118,9 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 			}
 		}
 		
-		finally
-		{
-			// Close Flume transaction
+		finally {
 			txn.close();
+			LOG.trace("Transaction closed.");
 		}
 		
 		// Return status to Flume (either Status.READY or Status.BACKOFF)
