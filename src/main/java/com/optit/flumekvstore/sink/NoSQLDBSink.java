@@ -1,4 +1,4 @@
-package com.optit.sink;
+package com.optit.flumekvstore.sink;
 
 import oracle.kv.FaultException;
 import oracle.kv.KVStore;
