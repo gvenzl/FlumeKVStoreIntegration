@@ -1,5 +1,6 @@
 package com.optit.flumekvstore.sink;
 
+import oracle.kv.Durability;
 import oracle.kv.FaultException;
 import oracle.kv.KVStore;
 import oracle.kv.KVStoreConfig;
@@ -28,8 +29,11 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	private static final Logger LOG = LoggerFactory.getLogger(NoSQLDBSink.class);
 
 	String kvHost;
-	String kvStoreName;
 	String kvPort;
+	String kvStoreName;
+	String kvStoreDurability;
+	String keyPolicy;
+	String keyPrefix;
 	
 	KVStore kvStore;
 
@@ -37,21 +41,44 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	public void configure(Context context)
 	{
 		// Get configuration properties for KV store
-		kvHost = context.getString("kvHost", "localhost");
-		kvStoreName = context.getString("kvStoreName", "kvstore");
-		kvPort = context.getString("kvPort", "5000");
+		kvHost = context.getString(NoSQLDBSinkConfiguration.KVHOST, "localhost");
+		kvPort = context.getString(NoSQLDBSinkConfiguration.KVPORT, "5000");
+		kvStoreName = context.getString(NoSQLDBSinkConfiguration.KVSTORE, "kvstore");
+		kvStoreDurability = context.getString(NoSQLDBSinkConfiguration.DURABILITY, "WRITE_NO_SYNC");
+		keyPolicy = context.getString(NoSQLDBSinkConfiguration.KEYPOLICY);
+		keyPrefix = context.getString(NoSQLDBSinkConfiguration.KEYPREFIX);
 		
 		LOG.info("Configuration settings:");
-		LOG.info("kvHost: " + kvHost);
-		LOG.info("kvStoreName: " + kvStoreName);
-		LOG.info("kvPort: " + kvPort);
+		LOG.info(NoSQLDBSinkConfiguration.KVHOST + ": " + kvHost);
+		LOG.info(NoSQLDBSinkConfiguration.KVPORT + ": " + kvPort);
+		LOG.info(NoSQLDBSinkConfiguration.KVSTORE + ": " + kvStoreName);
+		LOG.info(NoSQLDBSinkConfiguration.DURABILITY + ": " + kvStoreDurability);
+		LOG.info(NoSQLDBSinkConfiguration.KEYPOLICY + ": " + keyPolicy);
+		LOG.info(NoSQLDBSinkConfiguration.KEYPREFIX + ": " + keyPrefix);
 	}
 	
 	@Override
 	public void start()
 	{
-		try {
-			kvStore = KVStoreFactory.getStore(new KVStoreConfig(kvStoreName, kvHost + ":" + kvPort));
+		try
+		{
+			KVStoreConfig config = new KVStoreConfig(kvStoreName, kvHost + ":" + kvPort);
+			
+			// Set durability configuration
+			switch (kvStoreDurability)
+			{
+				case "SYNC": { config.setDurability(Durability.COMMIT_SYNC); break; }
+				case "WRITE_NO_SYNC": { config.setDurability(Durability.COMMIT_WRITE_NO_SYNC); break; }
+				case "NO_SYNC": { config.setDurability(Durability.COMMIT_NO_SYNC); break; }
+				default:
+				{
+					LOG.info("Invalid durability setting: " + kvStoreDurability);
+					LOG.info("Proceeding with default WRITE_NO_SYNC");
+					config.setDurability(Durability.COMMIT_WRITE_NO_SYNC);
+				}
+			}
+
+			kvStore = KVStoreFactory.getStore(config);	
 		}
 		catch (FaultException e) {
 			LOG.error("Could not establish connection to KV store!");
@@ -94,7 +121,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 			
 			LOG.trace("Event received: " + event.toString());
 			
-			//TODO: Think about how to derive key from message
+			//TODO: Implement Key serializer
 			kvStore.put(key, Value.createValue(event.getBody()));
 			
 			txn.commit();
