@@ -116,7 +116,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	public Status process() throws EventDeliveryException
 	{
 		LOG.debug("New event coming in, begin processing...");
-		Status status = null;
+		Status status = Status.READY;
 		
 		LOG.trace("Get Flume channel");
 		Channel ch = getChannel();
@@ -129,19 +129,13 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 		try
 		{
 			Event event = ch.take();
-			
-			// Netcat source generates empty events?
-			if (null != event)
-			{
+			if (null != event) {
 				LOG.trace("Event received: " + event.toString());
-			
 				kvStore.put(serializer.getKey(event), serializer.getValue(event));
 				LOG.debug("Event stored in KV store");
+				txn.commit();
+				LOG.debug("Transaction commited!");
 			}
-			
-			txn.commit();
-			status = Status.READY;
-			LOG.debug("Transaction commited!");
 		}
 		catch (Throwable t)
 		{
