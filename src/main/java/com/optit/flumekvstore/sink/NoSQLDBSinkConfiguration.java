@@ -31,12 +31,22 @@ public class NoSQLDBSinkConfiguration
 	public static final String DURABILITY = "durability";
 	
 	/**
-	 * The key policy that should be used.<br>
+	 * The policy of the key retrieval<br>
+	 * generate = Generates a simple key<br>
+	 * header = Retrieves the key from the header of the event<br>
+	 * regex = Retrieves the key from the event via a regex expression
+	 */
+	public static final String KEYPOLICY = "keyPolicy";
+	
+	/**
+	 * The key type that should be used.<br>
 	 * random = Generate a new Random key for each event<br>
 	 * timestamp = Generate a new milli seconds timestamp based key for each event<br>
 	 * nanotimestamp = Generate a new nano seconds timestamp based key for each event<br>
+	 * HEADER KEY = The header key to be used to retrieve the key from the event header<br>
+	 * REGEX EXPRESSION = The regular expression to be used to retrieve the key from the event
 	 */
-	public static final String KEYPOLICY = "keyPolicy";
+	public static final String KEYTYPE = "keyType";
 	
 	/**
 	 * Prefix to be used for the major key

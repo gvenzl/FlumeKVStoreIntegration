@@ -5,8 +5,6 @@ import oracle.kv.FaultException;
 import oracle.kv.KVStore;
 import oracle.kv.KVStoreConfig;
 import oracle.kv.KVStoreFactory;
-import oracle.kv.Key;
-import oracle.kv.Value;
 
 import org.apache.flume.Channel;
 import org.apache.flume.Context;
@@ -33,9 +31,11 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	String kvStoreName;
 	String kvStoreDurability;
 	String keyPolicy;
+	String keyType;
 	String keyPrefix;
 	
 	KVStore kvStore;
+	NoSQLDBEventSerializer serializer;
 
 	@Override
 	public void configure(Context context)
@@ -46,6 +46,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 		kvStoreName = context.getString(NoSQLDBSinkConfiguration.KVSTORE, "kvstore");
 		kvStoreDurability = context.getString(NoSQLDBSinkConfiguration.DURABILITY, "WRITE_NO_SYNC");
 		keyPolicy = context.getString(NoSQLDBSinkConfiguration.KEYPOLICY);
+		keyType = context.getString(NoSQLDBSinkConfiguration.KEYTYPE);
 		keyPrefix = context.getString(NoSQLDBSinkConfiguration.KEYPREFIX);
 		
 		LOG.info("Configuration settings:");
@@ -54,6 +55,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 		LOG.info(NoSQLDBSinkConfiguration.KVSTORE + ": " + kvStoreName);
 		LOG.info(NoSQLDBSinkConfiguration.DURABILITY + ": " + kvStoreDurability);
 		LOG.info(NoSQLDBSinkConfiguration.KEYPOLICY + ": " + keyPolicy);
+		LOG.info(NoSQLDBSinkConfiguration.KEYTYPE + ": " + keyType);
 		LOG.info(NoSQLDBSinkConfiguration.KEYPREFIX + ": " + keyPrefix);
 	}
 	
@@ -78,19 +80,34 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 				}
 			}
 
-			kvStore = KVStoreFactory.getStore(config);	
+			kvStore = KVStoreFactory.getStore(config);
+			
+			// Set key policy
+			switch (keyPolicy)
+			{
+				case "generate":
+				{
+					serializer = new GeneratorEventSerializer();
+					serializer.initialize(keyType, keyPrefix);
+					break;
+				}
+				//TODO: Implement both serializers
+				//case "header": { serializer = new Object(); break; }
+				//case "regex": { serializer = new Object(); break; }
+			}
 		}
 		catch (FaultException e) {
 			LOG.error("Could not establish connection to KV store!");
 			LOG.error(e.getMessage());
 		}
 		
-		System.out.println("Connection to KV store established");
+		LOG.info("Connection to KV store established");
 	}
 	
 	@Override
 	public void stop()
 	{
+		serializer.stop();
 		kvStore.close();
 		LOG.trace("Connection to KV store closed");
 	}
@@ -98,7 +115,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	@Override
 	public Status process() throws EventDeliveryException
 	{
-		LOG.info("New event coming in, begin processing...");
+		LOG.debug("New event coming in, begin processing...");
 		Status status = null;
 		
 		LOG.trace("Get Flume channel");
@@ -111,23 +128,20 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 		// This try clause includes whatever Channel operations you want to do
 		try
 		{
-			Key key = null;
 			Event event = ch.take();
-			if (null != event.getHeaders().get("Key")) {
-				key = Key.fromString(event.getHeaders().get("Key"));
-			} else {
-				key = Key.createKey("myKey");
+			
+			// Netcat source generates empty events?
+			if (null != event)
+			{
+				LOG.trace("Event received: " + event.toString());
+			
+				kvStore.put(serializer.getKey(event), serializer.getValue(event));
+				LOG.debug("Event stored in KV store");
 			}
-			
-			LOG.trace("Event received: " + event.toString());
-			
-			//TODO: Implement Key serializer
-			kvStore.put(key, Value.createValue(event.getBody()));
 			
 			txn.commit();
 			status = Status.READY;
-			
-			LOG.info("Event successfully stored in KV store");
+			LOG.debug("Transaction commited!");
 		}
 		catch (Throwable t)
 		{
@@ -136,6 +150,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 			status = Status.BACKOFF;
 			
 			LOG.error("Error processing event!");
+			LOG.error(t.toString());
 			LOG.error(t.getMessage());
 			
 			// re-throw all Errors
@@ -144,7 +159,6 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 				throw (Error)t;
 			}
 		}
-		
 		finally {
 			txn.close();
 			LOG.trace("Transaction closed.");
