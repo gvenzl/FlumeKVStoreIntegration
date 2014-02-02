@@ -17,28 +17,56 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Apache Flume sink for Oracle NoSQL DB
+ * Apache Flume sink for Oracle NoSQL DB.
  * @author gvenzl
  *
  */
 
-public class NoSQLDBSink extends AbstractSink implements Configurable
-{
+public class NoSQLDBSink extends AbstractSink implements Configurable {
+	/**
+	 * The logger instance to be used.
+	 */
 	private static final Logger LOG = LoggerFactory.getLogger(NoSQLDBSink.class);
 
-	String kvHost;
-	String kvPort;
-	String kvStoreName;
-	String kvStoreDurability;
-	String keyPolicy;
-	String keyType;
-	String keyPrefix;
-	
-	KVStore kvStore;
-	NoSQLDBEventSerializer serializer;
+	/**
+	 * The host of the KV store.
+	 */
+	private String kvHost;
+	/**
+	 * The port of the KV store.
+	 */
+	private String kvPort;
+	/**
+	 * The KV store name.
+	 */
+	private String kvStoreName;
+	/**
+	 * The durability to be used for persisting values.
+	 */
+	private String kvStoreDurability;
+	/**
+	 * The policy of the key retrieval.
+	 */
+	private String keyPolicy;
+	/**
+	 * The type of the key retrieval.
+	 */
+	private String keyType;
+	/**
+	 * The prefix used for the key.
+	 */
+	private String keyPrefix;
+	/**
+	 * The KV store.
+	 */
+	private KVStore kvStore;
+	/**
+	 * The event serializer.
+	 */
+	private NoSQLDBEventSerializer serializer;
 
 	@Override
-	public void configure(Context context)
+	public final void configure(final Context context)
 	{
 		// Get configuration properties for KV store
 		kvHost = context.getString(NoSQLDBSinkConfiguration.KVHOST, "localhost");
@@ -60,7 +88,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	}
 	
 	@Override
-	public void start()
+	public final void start()
 	{
 		try
 		{
@@ -72,11 +100,11 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 				case "SYNC": { config.setDurability(Durability.COMMIT_SYNC); break; }
 				case "WRITE_NO_SYNC": { config.setDurability(Durability.COMMIT_WRITE_NO_SYNC); break; }
 				case "NO_SYNC": { config.setDurability(Durability.COMMIT_NO_SYNC); break; }
-				default:
-				{
+				default: {
 					LOG.info("Invalid durability setting: " + kvStoreDurability);
 					LOG.info("Proceeding with default WRITE_NO_SYNC");
 					config.setDurability(Durability.COMMIT_WRITE_NO_SYNC);
+					break;
 				}
 			}
 
@@ -94,6 +122,8 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 				//TODO: Implement both serializers
 				//case "header": { serializer = new Object(); break; }
 				//case "regex": { serializer = new Object(); break; }
+				default:
+				break;
 			}
 		}
 		catch (FaultException e) {
@@ -105,7 +135,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	}
 	
 	@Override
-	public void stop()
+	public final void stop()
 	{
 		serializer.stop();
 		kvStore.close();
@@ -113,7 +143,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 	}
 	
 	@Override
-	public Status process() throws EventDeliveryException
+	public final Status process() throws EventDeliveryException
 	{
 		LOG.debug("New event coming in, begin processing...");
 		Status status = Status.READY;
@@ -152,9 +182,8 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 			LOG.error(t.getMessage());
 			
 			// re-throw all Errors
-			if (t instanceof Error)
-			{
-				throw (Error)t;
+			if (t instanceof Error) {
+				throw (Error) t;
 			}
 		}
 		finally {

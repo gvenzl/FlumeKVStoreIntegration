@@ -2,7 +2,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.optit.flumekvstore</groupId>
   <artifactId>flume-nosqldb</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.1</version>
   <name>Flume and NoSQL DB integration</name>
   <description>Integration for Apache Flume with Oracle NoSQL DB.</description>
   <build>

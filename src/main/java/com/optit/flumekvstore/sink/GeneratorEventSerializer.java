@@ -6,25 +6,34 @@ import oracle.kv.Value;
 import org.apache.flume.Event;
 
 /**
- * Apache Flume Event Serializer for generated keys
- * @author geraldvenzl
+ * Apache Flume Event Serializer for generated keys.
+ * @author gvenzl
  *
  */
 public class GeneratorEventSerializer implements NoSQLDBEventSerializer
 {
+	/**
+	 * The generation type of the key.
+	 */
 	private String keyType;
+	/**
+	 * The prefix for the key.
+	 */
 	private String prefix;
+	/**
+	 * The generator for the key.
+	 */
 	private SimpleKeyGenerator generator;
 	
 	@Override
-	public void initialize(String keyType, String prefix)	{
-		this.keyType = keyType;
-		this.prefix = prefix;
+	public final void initialize(final String type, final String pref)	{
+		keyType = type;
+		prefix = pref;
 		generator = new SimpleKeyGenerator();
 	}
 
 	@Override
-	public Key getKey(Event event) 
+	public final Key getKey(final Event event) 
 	{
 		switch (keyType)
 		{
@@ -36,7 +45,7 @@ public class GeneratorEventSerializer implements NoSQLDBEventSerializer
 	}
 
 	@Override
-	public Value getValue(Event event) {
+	public final Value getValue(final Event event) {
 		return Value.createValue(event.getBody());
 	}
 

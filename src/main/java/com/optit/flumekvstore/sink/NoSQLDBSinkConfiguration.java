@@ -1,24 +1,28 @@
 package com.optit.flumekvstore.sink;
 
 /**
- * This class holds the constants used for configuration of the sink
+ * This class holds the constants used for configuration of the sink.
  * @author gvenzl
  *
  */
-public class NoSQLDBSinkConfiguration
+public final class NoSQLDBSinkConfiguration
 {
 	/**
-	 * The host that should be used to connect to
+	 * Default constructor hindering an instanziation of the class.
+	 */
+	private NoSQLDBSinkConfiguration() { };
+	/**
+	 * The host that should be used to connect to.
 	 */
 	public static final String KVHOST = "kvHost";
 	
 	/**
-	 * The port that should be used to connect to
+	 * The port that should be used to connect to.
 	 */
 	public static final String KVPORT = "kvPort";
 	
 	/**
-	 * The kvStore name to connect to
+	 * The kvStore name to connect to.
 	 */
 	public static final String KVSTORE = "kvStoreName";
 	
@@ -31,25 +35,25 @@ public class NoSQLDBSinkConfiguration
 	public static final String DURABILITY = "durability";
 	
 	/**
-	 * The policy of the key retrieval<br>
+	 * The policy of the key retrieval.<br>
 	 * generate = Generates a simple key<br>
 	 * header = Retrieves the key from the header of the event<br>
-	 * regex = Retrieves the key from the event via a regex expression
+	 * regex = Retrieves the key directly from the event via a regular expression
 	 */
 	public static final String KEYPOLICY = "keyPolicy";
 	
 	/**
-	 * The key type that should be used.<br>
-	 * random = Generate a new Random key for each event<br>
-	 * timestamp = Generate a new milli seconds timestamp based key for each event<br>
-	 * nanotimestamp = Generate a new nano seconds timestamp based key for each event<br>
-	 * HEADER KEY = The header key to be used to retrieve the key from the event header<br>
-	 * REGEX EXPRESSION = The regular expression to be used to retrieve the key from the event
+	 * Specifies the type of the key based upon the key policy chosen.<br>
+	 * random = Generates a new key for each event based on a random long<br>
+	 * timestamp = Generates a new milli seconds timestamp based key for each event<br>
+	 * nanotimestamp = Generates a new nano seconds timestamp based key for each event<br>
+	 * HEADER KEY = The HashMap key to be used to retrieve the actual key from the event header<br>
+	 * REGULAR EXPRESSION = The regular expression to be used to retrieve the key from the event
 	 */
 	public static final String KEYTYPE = "keyType";
 	
 	/**
-	 * Prefix to be used for the major key
+	 * Prefix to be used for the major key.
 	 */
 	public static final String KEYPREFIX = "keyPrefix";
 
