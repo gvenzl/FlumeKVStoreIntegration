@@ -136,6 +136,10 @@ public class NoSQLDBSink extends AbstractSink implements Configurable
 				txn.commit();
 				LOG.debug("Transaction commited!");
 			}
+			else {
+				txn.rollback();
+				status = Status.BACKOFF;
+			}
 		}
 		catch (Throwable t)
 		{

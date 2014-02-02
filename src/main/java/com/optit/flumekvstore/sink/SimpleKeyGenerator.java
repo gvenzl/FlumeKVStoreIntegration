@@ -17,7 +17,7 @@ public class SimpleKeyGenerator
 	 * @return A NoSQL DB key based on a random number
 	 */
 	public Key getRandomKey(String prefix) {
-		return Key.createKey(String.valueOf(prefix + new Random().nextLong()));
+		return Key.fromString("/" + prefix + "/" + String.valueOf(new Random().nextLong()));
 	}
 	
 	/**
@@ -26,7 +26,7 @@ public class SimpleKeyGenerator
 	 * @return A NoSQL DB key based on milli second timestamp
 	 */
 	public Key getTimestampKey(String prefix) {
-		return Key.createKey(String.valueOf(prefix + System.currentTimeMillis()));
+		return Key.fromString("/" + prefix + "/" + String.valueOf(System.currentTimeMillis()));
 	}
 	
 	/**
@@ -35,7 +35,7 @@ public class SimpleKeyGenerator
 	 * @return A NoSQL DB key based on a nano second timestamp
 	 */
 	public Key getNanoTimestampKey(String prefix) {
-		return Key.createKey(String.valueOf(prefix + System.nanoTime()));
+		return Key.fromString("/" + prefix + "/" + String.valueOf(System.nanoTime()));
 	}
 
 }
