@@ -2,8 +2,6 @@ package com.optit.flumekvstore.sink;
 
 import java.nio.charset.Charset;
 
-import oracle.kv.Key;
-
 import org.apache.flume.Event;
 import org.apache.flume.event.EventBuilder;
 import org.junit.Assert;
