@@ -16,6 +16,8 @@ import org.apache.flume.sink.AbstractSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.optit.flumekvstore.sink.NoSQLDBSinkConfiguration.KEYPOLICYVALUES;
+
 /**
  * Apache Flume sink for Oracle NoSQL DB.
  * @author gvenzl
@@ -90,48 +92,47 @@ public class NoSQLDBSink extends AbstractSink implements Configurable {
 	@Override
 	public final void start()
 	{
-		try
+		// Create seralizer based on keyPolicy
+		switch (NoSQLDBSinkConfiguration.KEYPOLICYVALUES.valueOf(keyPolicy.toUpperCase()))
 		{
-			KVStoreConfig config = new KVStoreConfig(kvStoreName, kvHost + ":" + kvPort);
+			// If no or an invalid key policy has been specified, LOG error and fall through to the GeneratorEventSerializer - no break
+			default: { LOG.error("Invalid key policy specified. Using default: " + KEYPOLICYVALUES.GENERATE.toString().toLowerCase()); }
+			case GENERATE: { serializer = new GeneratorEventSerializer(); break; }
+			case HEADER: { serializer = new HeaderEventSerializer(); break; }
+			//TODO: Implement regex serializers
+			//case "regex": { serializer = new Object(); break; }
+		}
+		serializer.initialize(keyType, keyPrefix);
+		
+		// Build KV store config
+		KVStoreConfig config = new KVStoreConfig(kvStoreName, kvHost + ":" + kvPort);
 			
-			// Set durability configuration
-			switch (kvStoreDurability)
+		// Set durability configuration
+		switch (kvStoreDurability)
+		{
+			case "SYNC": { config.setDurability(Durability.COMMIT_SYNC); break; }
+			case "WRITE_NO_SYNC": { config.setDurability(Durability.COMMIT_WRITE_NO_SYNC); break; }
+			case "NO_SYNC": { config.setDurability(Durability.COMMIT_NO_SYNC); break; }
+			default: 
 			{
-				case "SYNC": { config.setDurability(Durability.COMMIT_SYNC); break; }
-				case "WRITE_NO_SYNC": { config.setDurability(Durability.COMMIT_WRITE_NO_SYNC); break; }
-				case "NO_SYNC": { config.setDurability(Durability.COMMIT_NO_SYNC); break; }
-				default: {
-					LOG.info("Invalid durability setting: " + kvStoreDurability);
-					LOG.info("Proceeding with default WRITE_NO_SYNC");
-					config.setDurability(Durability.COMMIT_WRITE_NO_SYNC);
-					break;
-				}
-			}
-
-			kvStore = KVStoreFactory.getStore(config);
-			
-			// Set key policy
-			switch (keyPolicy)
-			{
-				case "generate":
-				{
-					serializer = new GeneratorEventSerializer();
-					serializer.initialize(keyType, keyPrefix);
-					break;
-				}
-				//TODO: Implement both serializers
-				//case "header": { serializer = new Object(); break; }
-				//case "regex": { serializer = new Object(); break; }
-				default:
+				LOG.info("Invalid durability setting: " + kvStoreDurability);
+				LOG.info("Proceeding with default WRITE_NO_SYNC");
+				config.setDurability(Durability.COMMIT_WRITE_NO_SYNC);
 				break;
 			}
+		}
+
+		// Connect to KV store
+		try {
+			kvStore = KVStoreFactory.getStore(config);
+			LOG.info("Connection to KV store established");
 		}
 		catch (FaultException e) {
 			LOG.error("Could not establish connection to KV store!");
 			LOG.error(e.getMessage());
+			// Throw error
+			throw e;
 		}
-		
-		LOG.info("Connection to KV store established");
 	}
 	
 	@Override

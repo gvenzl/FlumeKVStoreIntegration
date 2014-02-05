@@ -35,12 +35,17 @@ public final class NoSQLDBSinkConfiguration
 	public static final String DURABILITY = "durability";
 	
 	/**
-	 * The policy of the key retrieval.<br>
-	 * generate = Generates a simple key<br>
-	 * header = Retrieves the key from the header of the event<br>
-	 * regex = Retrieves the key directly from the event via a regular expression
+	 * The policy of the key retrieval.
 	 */
 	public static final String KEYPOLICY = "keyPolicy";
+	
+	/**
+	 * The values for the {@link KEYPOLICY}.<br>
+	 * GENERATE = Generates a simple key<br>
+	 * HEADER = Retrieves the key from the header of the event<br>
+	 * REGEX = Retrieves the key directly from the event via a regular expression
+	 */
+	public static enum KEYPOLICYVALUES { GENERATE, HEADER, REGEX };
 	
 	/**
 	 * Specifies the type of the key based upon the key policy chosen.<br>

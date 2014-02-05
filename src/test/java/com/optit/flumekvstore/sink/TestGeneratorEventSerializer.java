@@ -41,7 +41,7 @@ public class TestGeneratorEventSerializer
 	@Test
 	public final void testInitialize()
 	{
-		gen.initialize("random", "TEST");
+		gen.initialize("timestamp", "TEST");
 	}
 	
 	/**
@@ -64,7 +64,7 @@ public class TestGeneratorEventSerializer
 	@Test
 	public final void testGetValue()
 	{
-		gen.initialize("random", "JUNIT");
+		gen.initialize("nanotimestamp", "JUNIT");
 		
 		Assert.assertNotNull(gen.getValue(testEvent));
 		Assert.assertEquals(gen.getValue(testEvent), gen.getValue(testEvent));

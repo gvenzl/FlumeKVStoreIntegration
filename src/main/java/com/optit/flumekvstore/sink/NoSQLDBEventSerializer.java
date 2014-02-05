@@ -18,21 +18,21 @@ public interface NoSQLDBEventSerializer
 	 * @param keyType The key type for the serializer
 	 * @param prefix The key prefix to be used for the serializer
 	 */
-	void initialize(String keyType, String prefix);
+	void initialize(final String keyType, final String prefix);
 	
 	/**
 	 * Returns the key to be used for persistence.
 	 * @param event The event from which the key should be retrieved
 	 * @return A new key to be used for persistence
 	 */
-	Key getKey(Event event);
+	Key getKey(final Event event);
 	
 	/**
 	 * Returns the value of the event to be persisted into the NoSQL DB.
 	 * @param event The event from which the value should be retrieved
 	 * @return The value to be persisted into the NoSQL DB
 	 */
-	Value getValue(Event event);
+	Value getValue(final Event event);
 	
 	/**
 	 * Cleanup routine that will be called when the sink is stopped.
