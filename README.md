@@ -72,7 +72,7 @@ A defined prefix that will be used as the head element for the major key. This c
 The FlumeKVStoreIntegration build is mavenized. You can compile, test and build FlumeKVStoreIntegration via standard Maven commands.
 However, in order to successfully do this you will first have to load the Oracle NoSQL DB Client into your Maven repository:
  
-* Download Oracle NoSQL DB client from [here]()
+* Download Oracle NoSQL DB client from [here](http://www.oracle.com/technetwork/database/database-technologies/nosqldb/downloads/index.html)
 * Install client into local Maven repository: ```mvn install:install-file -Dfile=./kvclient.jar -DgroupId=com.oracle.kv -DartifactId=kvclient -Dversion=2.1.57 -Dpackaging=jar```
 * Clone project from Github: ```git clone https://github.com/gvenzl/FlumeKVStoreIntegration.git```
 * Change into working directory: ```cd FlumeKVStoreIntegration```
