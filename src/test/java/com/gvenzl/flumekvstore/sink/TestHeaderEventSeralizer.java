@@ -1,4 +1,4 @@
-package com.optit.flumekvstore.sink;
+package com.gvenzl.flumekvstore.sink;
 
 import java.nio.charset.Charset;
 import java.util.HashMap;

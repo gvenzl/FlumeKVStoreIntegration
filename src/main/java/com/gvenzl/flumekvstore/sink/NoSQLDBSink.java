@@ -99,8 +99,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable {
 			default: { LOG.error("Invalid key policy specified. Using default: " + KEYPOLICYVALUES.GENERATE.toString().toLowerCase()); }
 			case GENERATE: { serializer = new GeneratorEventSerializer(); break; }
 			case HEADER: { serializer = new HeaderEventSerializer(); break; }
-			//TODO: Implement regex serializers
-			//case "regex": { serializer = new Object(); break; }
+			case REGEX: { serializer = new RegExEventSerializer(); break; }
 		}
 		serializer.initialize(keyType, keyPrefix);
 		
