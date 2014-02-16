@@ -1,4 +1,4 @@
-package com.optit.flumekvstore.sink;
+package com.gvenzl.flumekvstore.sink;
 
 /**
  * This class holds the constants used for configuration of the sink.

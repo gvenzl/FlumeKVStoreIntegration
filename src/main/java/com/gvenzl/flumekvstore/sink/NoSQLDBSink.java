@@ -1,4 +1,4 @@
-package com.optit.flumekvstore.sink;
+package com.gvenzl.flumekvstore.sink;
 
 import oracle.kv.Durability;
 import oracle.kv.FaultException;
@@ -16,7 +16,7 @@ import org.apache.flume.sink.AbstractSink;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.optit.flumekvstore.sink.NoSQLDBSinkConfiguration.KEYPOLICYVALUES;
+import com.gvenzl.flumekvstore.sink.NoSQLDBSinkConfiguration.KEYPOLICYVALUES;
 
 /**
  * Apache Flume sink for Oracle NoSQL DB.

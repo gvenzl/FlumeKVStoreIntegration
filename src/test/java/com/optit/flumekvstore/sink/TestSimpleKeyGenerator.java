@@ -5,6 +5,8 @@ import oracle.kv.Key;
 import org.junit.Assert;
 import org.junit.Test;
 
+import com.gvenzl.flumekvstore.sink.SimpleKeyGenerator;
+
 /**
  * TestSimpleKeyGenerator is a JUnit test class for {@link SimpleKeyGenerator}.
  * @author gvenzl

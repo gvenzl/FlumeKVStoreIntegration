@@ -22,7 +22,7 @@ FlumeKVStoreIntegration comes with a default configuration file for Apache Flume
 ### Sink properties
 Following properties are available for a NoSQL DB Flume sink:
 
-**noSqlDbSink.type = com.optit.flumekvstore.sink.NoSQLDBSink**  
+**noSqlDbSink.type = com.gvenzl.flumekvstore.sink.NoSQLDBSink**  
 Defines the type of the Flume sink, in this case the NoSQLDBSink (this must not be modified).  
 ***
 **noSqlDbSink.kvHost = localhost**  
@@ -45,7 +45,7 @@ Defines the durability requirements for the events:
 Defines the key retrieval policy to be used:
 
 **generate** => Generates a simple key for each individual event  
-**header** => Retrieves the key from the header of the event (see keyType, yet to be implemented)  
+**header** => Retrieves the key from the header of the event  
 **regex** => Retrieves the key directly from the event via a regular expression (see keyType, yet to be implemented)  
 ***
 **noSqlDbSink.keyType = random**  
@@ -59,11 +59,11 @@ Specifies the type of the key based upon the key policy chosen:
 	
 **header:**
 
-- *HEADER KEY* = The HashMap key to be used to retrieve the actual key from the event header
+- *HEADER KEY* = The HashMap key to be used to retrieve the actual key from the event header. The HashMap key can be a String of any value that identifies the object within the Header as the value to be used as NoSQL DB Key entry for the event. The value in the header has to be a String and its layout has to conform to the [com.oracle.kv.Key.toString()](http://docs.oracle.com/cd/NOSQL/html/javadoc/oracle/kv/Key.html#toString(\)) format. If a prefix for the key is defined, the prefix will be added to the key retrieved from the header.
 
 **regex:**
 
-- *REGULAR EXPRESSION* = The regular expression to be used to retrieve the key from the event directly
+- *REGULAR EXPRESSION* = The regular expression to be used to retrieve the key from the event directly  
 ***
 **noSqlDbSink.keyPrefix = *PREFIX***
 A defined prefix that will be used as the head element for the major key. This can be useful when multiple sources are directed into the same sink as it allows to logically separate events from different sources.

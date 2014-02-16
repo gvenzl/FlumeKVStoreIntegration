@@ -8,6 +8,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gvenzl.flumekvstore.sink.GeneratorEventSerializer;
+
 /**
  * TestGeneratorEventSerializer is a JUnit test class for {@link GeneratorEventSerializer}.
  * @author gvenzl

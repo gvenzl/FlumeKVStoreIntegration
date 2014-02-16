@@ -9,6 +9,8 @@ import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.gvenzl.flumekvstore.sink.HeaderEventSerializer;
+
 /**
  * TestHeaderEventSerializer is a JUnit test class for {@link HeaderEventSerializer}.
  * @author gvenzl

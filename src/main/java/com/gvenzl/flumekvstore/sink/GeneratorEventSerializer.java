@@ -1,4 +1,4 @@
-package com.optit.flumekvstore.sink;
+package com.gvenzl.flumekvstore.sink;
 
 import oracle.kv.Key;
 import oracle.kv.Value;
