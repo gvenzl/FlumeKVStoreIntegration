@@ -61,5 +61,10 @@ public final class NoSQLDBSinkConfiguration
 	 * Prefix to be used for the major key.
 	 */
 	public static final String KEYPREFIX = "keyPrefix";
+	
+	/**
+	 * Defines the batch size to be used for batching Apache Flume events.
+	 */
+	public static final String BATCHSIZE = "batchSize";
 
 }

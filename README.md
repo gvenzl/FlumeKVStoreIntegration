@@ -74,6 +74,9 @@ Optionally this group can be omitted. In such case, the entire event will be use
 **noSqlDbSink.keyPrefix = *PREFIX***
 A defined prefix that will be used as the head element for the major key. This can be useful when multiple sources are directed into the same sink as it allows to logically separate events from different sources.
 ***
+**noSqlDbSink.batchSize = 1**
+The batch sized to be used for storing events. When a lot of events arrive in a very short period of time it might make sense to batch up individual persistent operations to improve the speed of the sink. The default batch size is 1, i.e. is disabled by default. Batch sizes should not be too big nor too small. The anticipated value depends a lot on the the circumstances and how many events are received in what time frame. It is suggested to start with a small batch size number (e.g. 100 or 1000) and fine tune the value for the actual use case.
+***
 ## 3. Build from source
 The FlumeKVStoreIntegration build is mavenized. You can compile, test and build FlumeKVStoreIntegration via standard Maven commands.
 However, in order to successfully do this you will first have to load the Oracle NoSQL DB Client into your Maven repository:

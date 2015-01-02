@@ -66,6 +66,11 @@ public class NoSQLDBSink extends AbstractSink implements Configurable {
 	 * The event serializer.
 	 */
 	private NoSQLDBEventSerializer serializer;
+	
+	/**
+	 * The batch size for batch operations.
+	 */
+	private Integer batchSize;
 
 	@Override
 	public final void configure(final Context context)
@@ -78,6 +83,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable {
 		keyPolicy = context.getString(NoSQLDBSinkConfiguration.KEYPOLICY);
 		keyType = context.getString(NoSQLDBSinkConfiguration.KEYTYPE);
 		keyPrefix = context.getString(NoSQLDBSinkConfiguration.KEYPREFIX);
+		batchSize = context.getInteger(NoSQLDBSinkConfiguration.BATCHSIZE, 1);
 		
 		LOG.info("Configuration settings:");
 		LOG.info(NoSQLDBSinkConfiguration.KVHOST + ": " + kvHost);
@@ -87,6 +93,7 @@ public class NoSQLDBSink extends AbstractSink implements Configurable {
 		LOG.info(NoSQLDBSinkConfiguration.KEYPOLICY + ": " + keyPolicy);
 		LOG.info(NoSQLDBSinkConfiguration.KEYTYPE + ": " + keyType);
 		LOG.info(NoSQLDBSinkConfiguration.KEYPREFIX + ": " + keyPrefix);
+		LOG.info(NoSQLDBSinkConfiguration.BATCHSIZE + ": " + batchSize);
 	}
 	
 	@Override
@@ -158,18 +165,17 @@ public class NoSQLDBSink extends AbstractSink implements Configurable {
 		// This try clause includes whatever Channel operations you want to do
 		try
 		{
-			Event event = ch.take();
-			if (null != event) {
+			for (int iEvent = 0; iEvent < batchSize; iEvent++) {
+				Event event = ch.take();
+				// Empty event in the channel, continue to next event
+				if (null == event) { continue; }
+				
 				LOG.trace("Event received: " + event.toString());
 				kvStore.put(serializer.getKey(event), serializer.getValue(event));
 				LOG.debug("Event stored in KV store");
-				txn.commit();
-				LOG.debug("Transaction commited!");
 			}
-			else {
-				txn.rollback();
-				status = Status.BACKOFF;
-			}
+			txn.commit();
+			LOG.debug("Transaction committed!");
 		}
 		catch (Throwable t)
 		{
